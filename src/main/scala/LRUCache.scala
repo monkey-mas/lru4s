@@ -73,47 +73,31 @@ class LRUCache[K, V]() {
     }
 
   private def deleteLruNode(): Unit =
-    if (isEmpty) {
-      throw new RuntimeException("Can't delete LRU node: Cache is empty")
-    } else {
-      // As the Cache is not empty, we can safely access to the next node of LRU node.
-      try {
-        key2NodeBiMap.inverse().remove(lruNode.asInstanceOf[Node])
+    if (!isEmpty) {
+      key2NodeBiMap.inverse().remove(lruNode)
 
-        val newLruNode = lruNode.asInstanceOf[Node].getNext
-        newLruNode match {
-          case node: Node =>
-            node.setPrev(DNil)
-            lruNode = node
-          case DNil =>
-            lruNode = DNil
-            mruNode = DNil
-        }
-      } catch {
-        case e: ClassCastException =>
-          // This shouldn't happen when asInstanceOf[Node] is called.
+      val node = lruNode.asInstanceOf[Node].getNext
+      if (node ne DNil) {
+        node.asInstanceOf[Node].setPrev(DNil)
       }
+      lruNode = node
     }
 
   private def appendToMruNode(node: DoublyLinkedList): Unit =
     node match {
-      case DNil => // Do nothing
+      case DNil => // do nothing
       case node: Node =>
-        if (isEmpty) {
+        node.setPrev(mruNode)
+        node.setNext(DNil)
+
+        if (lruNode eq DNil) {
           lruNode = node
-          mruNode = node
-        } else {
-          node.setNext(DNil)
-          node.setPrev(mruNode)
-          try {
-            // As the cache is not empty, MRU(last) node is not DNil
-            mruNode.asInstanceOf[Node].setNext(node)
-          } catch {
-            case e: ClassCastException =>
-              // This shouldn't happen
-          }
-          mruNode = node
         }
+
+        if (mruNode ne DNil) {
+          mruNode.asInstanceOf[Node].setNext(node)
+        }
+        mruNode = node
     }
 
   /**
@@ -155,6 +139,9 @@ class LRUCache[K, V]() {
           // This shouldn't happen when asInstanceOf[Node] is called.
       }
     }
+
+  private[lru4s] def getLruValue: Option[V] = if (lruNode eq DNil) None else Some(lruNode.asInstanceOf[Node].getValue)
+  private[lru4s] def getMruValue: Option[V] = if (mruNode eq DNil) None else Some(mruNode.asInstanceOf[Node].getValue)
 }
 
 object LRUCache {

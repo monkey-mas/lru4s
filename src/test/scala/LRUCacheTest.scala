@@ -16,6 +16,20 @@ class LRUCacheTest extends FunSpec {
         cache.get(0)
       }
     }
+
+    it("key obtained via get(key) becomes the MRU node") {
+      val cache = new LRUCache[Int, Int]()
+      cache.put(2, 2)
+      cache.put(1, 1)
+      cache.put(0, 0)
+
+      assert(cache.getLruValue.contains(2))
+      assert(cache.getMruValue.contains(0))
+
+      assert(cache.get(2) == 2)
+      assert(cache.getLruValue.contains(1))
+      assert(cache.getMruValue.contains(2))
+    }
   }
 
   describe("put(k, v)") {
@@ -23,6 +37,28 @@ class LRUCacheTest extends FunSpec {
       val cache = new LRUCache[Int, Int]()
       cache.put(0, 1)
       assert(cache.get(0) == 1)
+    }
+
+    it("put key changes LRU and MRU nodes properly") {
+      val cache = new LRUCache[Int, Int]()
+      assert(cache.getLruValue.isEmpty)
+      assert(cache.getMruValue.isEmpty)
+
+      cache.put(0, 0)
+      assert(cache.getLruValue.contains(0))
+      assert(cache.getMruValue.contains(0))
+
+      cache.put(1, 1)
+      assert(cache.getLruValue.contains(0))
+      assert(cache.getMruValue.contains(1))
+
+      cache.put(2, 2)
+      assert(cache.getLruValue.contains(0))
+      assert(cache.getMruValue.contains(2))
+
+      cache.put(3, 3)
+      assert(cache.getLruValue.contains(1))
+      assert(cache.getMruValue.contains(3))
     }
 
     it("LRU node is deleted when a new key-value pair is put for a full cache") {

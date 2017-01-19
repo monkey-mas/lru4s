@@ -7,14 +7,12 @@ class LRUCacheTest extends FunSpec {
     it("get key if the key exists") {
       val cache = new LRUCache[Int, Int]()
       cache.put(0, 1)
-      assert(cache.get(0) == 1)
+      assert(cache.get(0).contains(1))
     }
 
-    it("throw exception if key doesn't exist") {
+    it("get None if key doesn't exist") {
       val cache = new LRUCache[Int, Int]()
-      assertThrows[RuntimeException] {
-        cache.get(0)
-      }
+      assert(cache.get(0).isEmpty)
     }
 
     it("key obtained via get(key) becomes the MRU node") {
@@ -26,11 +24,11 @@ class LRUCacheTest extends FunSpec {
       assert(cache.getLruValue.contains(2))
       assert(cache.getMruValue.contains(0))
 
-      assert(cache.get(2) == 2)
+      assert(cache.get(2).contains(2))
       assert(cache.getLruValue.contains(1))
       assert(cache.getMruValue.contains(2))
 
-      assert(cache.get(0) == 0)
+      assert(cache.get(0).contains(0))
       assert(cache.getLruValue.contains(1))
       assert(cache.getMruValue.contains(0))
     }
@@ -40,7 +38,7 @@ class LRUCacheTest extends FunSpec {
     it("put key and value correctly") {
       val cache = new LRUCache[Int, Int]()
       cache.put(0, 1)
-      assert(cache.get(0) == 1)
+      assert(cache.get(0).contains(1))
     }
 
     it("put key changes LRU and MRU nodes properly") {
@@ -70,11 +68,11 @@ class LRUCacheTest extends FunSpec {
       for (i <- 0 to LRUCache.MAX_CACHE_SIZE) {
         cache.put(i, i)
       }
-      assertThrows[RuntimeException] {
-        cache.get(0) // key: 0 was deleted as it was the LRU node when we put the MAX_CACHE_SIZE-th node
-      }
+
+      // key: 0 was deleted as it was the LRU node when we put the MAX_CACHE_SIZE-th node
+      assert(cache.get(0).isEmpty)
       for (i <- 1 to LRUCache.MAX_CACHE_SIZE) {
-        assert(cache.get(i) == i)
+        assert(cache.get(i).contains(i))
       }
     }
   }

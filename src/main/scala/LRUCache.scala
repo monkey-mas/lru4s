@@ -41,14 +41,12 @@ class LRUCache[K, V]() {
 
   def isEmpty: Boolean = key2NodeBiMap.isEmpty
 
-  def get(key: K): V = {
-    if (key2NodeBiMap.containsKey(key)) {
-      val node = key2NodeBiMap.get(key)
-      updateCache(node)
-      node.getValue
-    }
+  def get(key: K): Option[V] = {
+    val node = key2NodeBiMap.get(key)
+    if (node eq null) None
     else {
-      throw new RuntimeException(s"key=$key is not available in the cache: key might have been deleted already.")
+      updateCache(node)
+      Some(node.getValue)
     }
   }
 

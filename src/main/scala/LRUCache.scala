@@ -127,17 +127,13 @@ class LRUCache[K, V]() {
       appendToMruNode(node)
     }
     else {
-      try {
-        // As the node is neither LRU(head) nor MRU(last),
-        // we can safely say that (prev != DNil && next != DNil)
-        val prev = node.asInstanceOf[Node].getPrev.asInstanceOf[Node]
-        val next = node.asInstanceOf[Node].getNext.asInstanceOf[Node]
-        prev.setNext(next)
-        next.setPrev(prev)
-      } catch {
-        case e: ClassCastException =>
-          // This shouldn't happen when asInstanceOf[Node] is called.
-      }
+      // As the node is neither LRU(head) nor MRU(last),
+      // we can safely say that (prev != DNil && next != DNil)
+      val prev = node.asInstanceOf[Node].getPrev.asInstanceOf[Node]
+      val next = node.asInstanceOf[Node].getNext.asInstanceOf[Node]
+      prev.setNext(next)
+      next.setPrev(prev)
+      appendToMruNode(node)
     }
 
   private[lru4s] def getLruValue: Option[V] = if (lruNode eq DNil) None else Some(lruNode.asInstanceOf[Node].getValue)

@@ -29,6 +29,10 @@ class LRUCacheTest extends FunSpec {
       assert(cache.get(2) == 2)
       assert(cache.getLruValue.contains(1))
       assert(cache.getMruValue.contains(2))
+
+      assert(cache.get(0) == 0)
+      assert(cache.getLruValue.contains(1))
+      assert(cache.getMruValue.contains(0))
     }
   }
 

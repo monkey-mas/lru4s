@@ -17,5 +17,6 @@ scalacOptions ++= (
 )
 
 libraryDependencies ++= Seq(
-  "org.scalatest" %% "scalatest" % "3.0.1" % "test" 
+  "com.google.guava" % "guava" % "21.0",
+  "org.scalatest" %% "scalatest" % "3.0.1" % "test"
 )

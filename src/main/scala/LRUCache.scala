@@ -1,6 +1,6 @@
 package lru4s
 
-import scala.collection.mutable.Map
+import com.google.common.collect.HashBiMap
 
 /**
   * LRU cache with Time Complexity
@@ -14,11 +14,9 @@ import scala.collection.mutable.Map
 class LRUCache[K, V]() {
   
   sealed abstract class DoublyLinkedList()
-  class Node(private[this] val key: K, private[this] var value: V) extends DoublyLinkedList {
+  class Node(private[this] var value: V) extends DoublyLinkedList {
     private[this] var prev: DoublyLinkedList = DNil
     private[this] var next: DoublyLinkedList = DNil
-
-    def getKey: K = key
 
     def getValue: V = value
 
@@ -37,18 +35,15 @@ class LRUCache[K, V]() {
   }
   object DNil extends DoublyLinkedList
 
-
-  private[this] var size = 0
-  private[this] val key2Node = Map[K, Node]()
+  private[this] val key2NodeBiMap = HashBiMap.create[K, Node](LRUCache.MAX_CACHE_SIZE)
   private[this] var lruNode: DoublyLinkedList = DNil
   private[this] var mruNode: DoublyLinkedList = DNil
 
-  def isEmpty: Boolean =
-    if (size == 0) true else false
+  def isEmpty: Boolean = key2NodeBiMap.isEmpty
 
   def get(key: K): V = {
-    if (key2Node.contains(key)) {
-      val node = key2Node(key)
+    if (key2NodeBiMap.containsKey(key)) {
+      val node = key2NodeBiMap.get(key)
       updateCache(node)
       node.getValue
     }
@@ -62,19 +57,19 @@ class LRUCache[K, V]() {
     * otherwise add the key-value pair to the cache
     */
   def put(key: K, value: V): Unit =
-    if (key2Node.contains(key)) {
-      val node = key2Node(key)
+    if (key2NodeBiMap.containsKey(key)) {
+      val node = key2NodeBiMap.get(key)
       updateCache(node)
       node.setValue(value)
     }
     else {
-      if (size == LRUCache.MAX_CACHE_SIZE) {
+      if (key2NodeBiMap.size() == LRUCache.MAX_CACHE_SIZE) {
         deleteLruNode()
       }
 
-      val node = new Node(key, value)
-      key2Node += ((key, node))
+      val node = new Node(value)
       appendToMruNode(node)
+      key2NodeBiMap.put(key, node)
     }
 
   private def deleteLruNode(): Unit =
@@ -83,7 +78,8 @@ class LRUCache[K, V]() {
     } else {
       // As the Cache is not empty, we can safely access to the next node of LRU node.
       try {
-        val keyToDelete = lruNode.asInstanceOf[Node].getKey
+        key2NodeBiMap.inverse().remove(lruNode.asInstanceOf[Node])
+
         val newLruNode = lruNode.asInstanceOf[Node].getNext
         newLruNode match {
           case node: Node =>
@@ -93,8 +89,6 @@ class LRUCache[K, V]() {
             lruNode = DNil
             mruNode = DNil
         }
-        key2Node -= keyToDelete
-        size -= 1
       } catch {
         case e: ClassCastException =>
           // This shouldn't happen when asInstanceOf[Node] is called.
@@ -120,7 +114,6 @@ class LRUCache[K, V]() {
           }
           mruNode = node
         }
-        size += 1
     }
 
   /**
